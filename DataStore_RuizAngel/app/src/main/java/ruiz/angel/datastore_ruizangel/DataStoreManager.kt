@@ -13,11 +13,11 @@ val Context.datastore by preferencesDataStore(name = "mis_prefs")
 class DataStoreManager(private val context: Context) {
     companion object {
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        val CART_KEY = stringPreferencesKey("items_carrito")
     }
 
     val isLoggedIn: Flow<Boolean> = context.datastore.data
-        .map { preferences -> preferences[IS_LOGGED_IN] ?: false
-    }
+        .map { preferences -> preferences[IS_LOGGED_IN] ?: false }
 
     suspend fun setLoggedIn(value: Boolean) {
         context.datastore.edit { preferences ->
@@ -29,15 +29,12 @@ class DataStoreManager(private val context: Context) {
         context.datastore.edit { it.clear() }
     }
 
-    ///
-    val CART_KEY = stringPreferencesKey("items_carrito")
+    val cartFlow: Flow<String> = context.datastore.data
+        .map { preferences -> preferences[CART_KEY] ?: "" }
 
-    val cartFlow: Flow<String?> = context.datastore.data
-        .map { preferences -> preferences[CART_KEY] }
-
-    suspend fun saveCartJson(json: String) {
+    suspend fun saveCartIds(idsString: String) {
         context.datastore.edit { preferences ->
-            preferences[CART_KEY] = json
+            preferences[CART_KEY] = idsString
         }
     }
 }

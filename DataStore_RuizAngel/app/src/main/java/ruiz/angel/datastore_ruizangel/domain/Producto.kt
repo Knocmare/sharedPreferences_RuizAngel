@@ -1,8 +1,5 @@
 package ruiz.angel.datastore_ruizangel.domain
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Producto(
     val id: Int,
     val nombre: String,

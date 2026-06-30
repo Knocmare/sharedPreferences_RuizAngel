@@ -34,9 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
 import ruiz.angel.datastore_ruizangel.domain.Producto
+import ruiz.angel.datastore_ruizangel.dummies.showAllProducts
 import ruiz.angel.datastore_ruizangel.screens.CartScreen
 import ruiz.angel.datastore_ruizangel.screens.ProductDetailScreen
 import ruiz.angel.datastore_ruizangel.screens.ProductMenuScreen
@@ -153,22 +152,20 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        val jsonSaved = dsManager.cartFlow.first()
-        if (!jsonSaved.isNullOrEmpty()) {
-            try {
-                val savedProducts: List<Producto> = Json.decodeFromString(jsonSaved)
-                cartList.clear()
-                cartList.addAll(savedProducts)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        val idsString = dsManager.cartFlow.first()
+        if (idsString.isNotEmpty()) {
+            val ids = idsString.split(",").mapNotNull { it.toIntOrNull() }
+            val catalogo = showAllProducts()
+            val productosGuardados = ids.mapNotNull { id -> catalogo.find { it.id == id } }
+            cartList.clear()
+            cartList.addAll(productosGuardados)
         }
     }
 
     val saveCart = {
-        val jsonString = Json.encodeToString(cartList.toList())
+        val idsString = cartList.joinToString(",") { it.id.toString() }
         coroutineScope.launch {
-            dsManager.saveCartJson(jsonString)
+            dsManager.saveCartIds(idsString)
         }
     }
 
